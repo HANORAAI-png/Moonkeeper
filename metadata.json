@@ -1,0 +1,6 @@
+{
+  "name": "MoonKeeper - Lunar Mission Intelligence",
+  "description": "An interactive lunar mission browser and environment intelligence platform for exploring commercial lunar missions, landing sites, illumination conditions, Earth visibility, and mission opportunities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
