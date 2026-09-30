@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { LunarMission, MissionStatus, LunarRegion } from '../types/mission';
-import { Search, Filter, ExternalLink, ArrowRight, Compass, Calendar, Rocket, MapPin } from 'lucide-react';
+import { formatCoordinates } from '../utils/coordinateFormatting';
+import { Search, Filter, ExternalLink, ArrowRight, Compass, Calendar, Rocket, MapPin, Plus } from 'lucide-react';
 
 interface MissionBrowserViewProps {
   missions: LunarMission[];
   selectedMissionId: string;
   onSelectMission: (mission: LunarMission) => void;
   onAnalyzeMission: (mission: LunarMission) => void;
+  onOpenCustomModal?: () => void;
 }
 
 export const MissionBrowserView: React.FC<MissionBrowserViewProps> = ({
@@ -14,6 +16,7 @@ export const MissionBrowserView: React.FC<MissionBrowserViewProps> = ({
   selectedMissionId,
   onSelectMission,
   onAnalyzeMission,
+  onOpenCustomModal,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -59,12 +62,24 @@ export const MissionBrowserView: React.FC<MissionBrowserViewProps> = ({
             <div className="text-xs uppercase font-mono tracking-wider text-cyan-400">Public Mission Manifest</div>
             <h2 className="text-xl font-bold text-white font-display">Commercial Lunar Mission Browser</h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Verified NASA CLPS task orders and scientific lunar landing sites
+              Verified NASA CLPS task orders, post-landing flight telemetry, and lunar science landing sites
             </p>
           </div>
 
-          <div className="text-xs font-mono text-slate-400">
-            Showing <span className="text-white font-bold">{filteredMissions.length}</span> of {missions.length} missions
+          <div className="flex items-center gap-3">
+            {onOpenCustomModal && (
+              <button
+                onClick={onOpenCustomModal}
+                className="px-3 py-1.5 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 border border-cyan-500/40 font-semibold text-xs flex items-center gap-1.5 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Custom Coordinates</span>
+              </button>
+            )}
+
+            <div className="text-xs font-mono text-slate-400">
+              Showing <span className="text-white font-bold">{filteredMissions.length}</span> of {missions.length}
+            </div>
           </div>
         </div>
 
@@ -160,7 +175,7 @@ export const MissionBrowserView: React.FC<MissionBrowserViewProps> = ({
                     <span className="text-[10px] font-mono text-slate-500 uppercase block">Landing Location</span>
                     <span className="text-slate-200 font-medium">{m.landingSite.name}</span>
                     <div className="text-[11px] font-mono text-cyan-400">
-                      {m.landingSite.latitude.toFixed(2)}°, {m.landingSite.longitude.toFixed(2)}°
+                      {formatCoordinates(m.landingSite.latitude, m.landingSite.longitude)}
                     </div>
                   </div>
 

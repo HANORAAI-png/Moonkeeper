@@ -1,5 +1,5 @@
 import React from 'react';
-import { Globe2, HelpCircle, Radio, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { Globe2, HelpCircle, Radio, AlertTriangle, CheckCircle2, XCircle, Mountain } from 'lucide-react';
 import { LocalEnvironmentConditions } from '../types/mission';
 import { CalculationTopic } from './CalculationExplainerModal';
 
@@ -19,26 +19,27 @@ export const EarthVisibilityPanel: React.FC<EarthVisibilityPanelProps> = ({
     earthAzimuthDeg,
     earthVisibilityState,
     commOpportunitySummary,
-    isDirectToEarthPossible
+    terrainHorizonElevDegAtEarth,
+    isEarthOccludedByTerrain,
+    apparentEarthElevationAboveTerrainDeg,
   } = conditions;
 
-  // Visual status styles
   const visibilityStyles = {
     Visible: {
       badge: 'text-emerald-300 bg-emerald-950/40 border-emerald-500/40',
-      label: 'Geometrically Above Horizon',
+      label: 'Geometrically Above Terrain Horizon',
       icon: CheckCircle2,
       textColor: 'text-emerald-400'
     },
     Marginal: {
       badge: 'text-amber-300 bg-amber-950/40 border-amber-500/40',
-      label: 'Near Horizon (Terrain Risk)',
+      label: 'Near Terrain Horizon (Limb Margin)',
       icon: AlertTriangle,
       textColor: 'text-amber-400'
     },
     'Not Visible': {
       badge: 'text-rose-300 bg-rose-950/40 border-rose-500/40',
-      label: 'Below Horizon / Far Side',
+      label: isEarthOccludedByTerrain ? 'Occluded by Crater Rim / Mountain' : 'Below Horizon / Far Side',
       icon: XCircle,
       textColor: 'text-rose-400'
     }
@@ -47,7 +48,7 @@ export const EarthVisibilityPanel: React.FC<EarthVisibilityPanelProps> = ({
   const StatusIcon = visibilityStyles.icon;
 
   return (
-    <div className="bg-[#090D16] border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+    <div className="bg-[#090D16] border border-slate-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
       {/* Header */}
       <div>
         <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
@@ -57,7 +58,7 @@ export const EarthVisibilityPanel: React.FC<EarthVisibilityPanelProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-semibold tracking-tight text-white uppercase font-display">Earth Visibility & Geometry</h3>
-              <p className="text-xs text-slate-400">Direct-to-Earth Line of Sight</p>
+              <p className="text-xs text-slate-400">Direct-to-Earth Line of Sight with LOLA Relief</p>
             </div>
           </div>
           <button
@@ -86,8 +87,8 @@ export const EarthVisibilityPanel: React.FC<EarthVisibilityPanelProps> = ({
             </div>
             <div className="mt-2 text-[11px] text-slate-400 leading-snug">
               {earthElevationDeg > 0
-                ? 'Above astronomical horizon'
-                : 'Below horizon (occluded by lunar body)'}
+                ? 'Above spherical horizon'
+                : 'Below spherical horizon (occluded by lunar body)'}
             </div>
           </div>
 
@@ -109,8 +110,32 @@ export const EarthVisibilityPanel: React.FC<EarthVisibilityPanelProps> = ({
           </div>
         </div>
 
+        {/* LOLA Local Terrain Clearance Banner for Earth */}
+        <div className={`mt-3 p-3 rounded-lg border flex items-center justify-between ${
+          isEarthOccludedByTerrain
+            ? 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+            : 'bg-[#05070B] border-slate-800 text-slate-300'
+        }`}>
+          <div className="flex items-center gap-2">
+            <Mountain className={`w-4 h-4 ${isEarthOccludedByTerrain ? 'text-rose-400' : 'text-sky-400'}`} />
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                LOLA Terrain Horizon at Earth Bearing ({earthAzimuthDeg.toFixed(0)}°)
+              </div>
+              <div className="text-xs font-semibold mt-0.5">
+                {isEarthOccludedByTerrain
+                  ? `Earth occluded by local ridge (Rim is +${terrainHorizonElevDegAtEarth.toFixed(1)}°)`
+                  : `Line of sight clear of terrain (+${apparentEarthElevationAboveTerrainDeg.toFixed(1)}° above local rim)`}
+              </div>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono text-slate-400">
+            Rim: +{terrainHorizonElevDegAtEarth.toFixed(1)}°
+          </span>
+        </div>
+
         {/* Earth Visibility State Banner */}
-        <div className="mt-3.5 p-3 rounded-lg border border-slate-800 bg-[#05070B] flex items-center justify-between">
+        <div className="mt-3 p-3 rounded-lg border border-slate-800 bg-[#05070B] flex items-center justify-between">
           <div>
             <div className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">Geometric Visibility State</div>
             <div className="flex items-center gap-2 mt-1">
@@ -144,9 +169,9 @@ export const EarthVisibilityPanel: React.FC<EarthVisibilityPanelProps> = ({
       </div>
 
       {/* Scientific Principle Disclosure */}
-      <div className="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 leading-relaxed">
+      <div className="pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 leading-relaxed">
         <span className="text-slate-300 font-medium">Communication Rule: </span>
-        Direct-to-Earth communication depends on whether Earth is geometrically visible from the landing location and on mission/system constraints. Geometric visibility alone does not guarantee successful data transmission; antenna pointing accuracy, RF link budget, Deep Space Network (DSN) ground station scheduling, and local crater rim blockages govern actual link closure.
+        Direct-to-Earth communication depends on whether Earth is geometrically visible from the landing location and on mission/system constraints. Topographic blockage and lander attitude (such as IM-1 tipping onto its side) severely impact high-gain antenna link margins even when Earth is geometrically above the horizon.
       </div>
     </div>
   );

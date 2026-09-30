@@ -11,6 +11,12 @@ export type SunlightCondition = 'Available' | 'Limited' | 'Unavailable';
 
 export type CommVisibilityState = 'Visible' | 'Marginal' | 'Not Visible';
 
+export type SolarPanelConfiguration = 
+  | 'horizontal' 
+  | 'vertical-sun-facing' 
+  | 'vertical-omni' 
+  | 'tilted-lander';
+
 export interface LandingSite {
   name: string;
   targetFeature: string;
@@ -20,6 +26,7 @@ export interface LandingSite {
   elevationKm: number; // Relative to mean lunar radius (1737.4 km)
   terrainDescription: string;
   geologicalSignificance: string;
+  isCustomSite?: boolean;
 }
 
 export interface PayloadItem {
@@ -50,7 +57,7 @@ export interface LunarMission {
   name: string;
   lander: string;
   contractor: string;
-  program: 'NASA CLPS' | 'Historical Reference' | 'International Science Reference';
+  program: 'NASA CLPS' | 'Historical Reference' | 'International Science Reference' | 'Custom Mission';
   taskOrder: string;
   landingSite: LandingSite;
   status: MissionStatus;
@@ -76,17 +83,45 @@ export interface LunarEphemerisState {
   illuminationFraction: number; // 0.0 to 1.0 (percent of lunar disk illuminated)
 }
 
+export interface SynodicCycleSummary {
+  totalSunlightHoursMonth: number;
+  totalCommVisibleHoursMonth: number;
+  sunlightPercentageMonth: number;
+  commPercentageMonth: number;
+  maxSunElevationDeg: number;
+  minSunElevationDeg: number;
+  maxEarthElevationDeg: number;
+  minEarthElevationDeg: number;
+  terrainOccultationHoursMonth: number;
+}
+
 export interface LocalEnvironmentConditions {
-  sunElevationDeg: number; // angular elevation relative to local horizon
+  sunElevationDeg: number; // geometric angular elevation relative to spherical horizon
   sunAzimuthDeg: number; // degrees clockwise from lunar North
   sunlightCondition: SunlightCondition;
-  solarFluxEstimateWm2: number; // Incident solar flux (approx 1361 W/m² * sin(elev))
-  earthElevationDeg: number; // angular elevation relative to local horizon
+  solarFluxEstimateWm2: number; // Incident solar flux for currently selected panel config
+  solarFluxHorizontalWm2: number; // Flat horizontal plane (1361 * sin(elev))
+  solarFluxVerticalSunFacingWm2: number; // Vertical panel facing Sun (1361 * cos(elev))
+  solarFluxSelectedWm2: number;
+  selectedPanelType: SolarPanelConfiguration;
+
+  // LOLA Terrain Profile Topography
+  terrainHorizonElevDegAtSun: number; // Elevation of local crater rim / mountain in Sun azimuth
+  isSunOccludedByTerrain: boolean; // True if Sun is below local terrain crest
+  apparentSunElevationAboveTerrainDeg: number; // sunElevationDeg - terrainHorizonElevDegAtSun
+
+  earthElevationDeg: number; // geometric angular elevation relative to spherical horizon
   earthAzimuthDeg: number; // degrees clockwise from lunar North
+  terrainHorizonElevDegAtEarth: number; // Elevation of local crater rim in Earth azimuth
+  isEarthOccludedByTerrain: boolean; // True if Earth line of sight is obstructed by local terrain
+  apparentEarthElevationAboveTerrainDeg: number; // earthElevationDeg - terrainHorizonElevDegAtEarth
+
   earthVisibilityState: CommVisibilityState;
   commOpportunitySummary: string;
   isDirectToEarthPossible: boolean;
   localLunarTimeHours: number; // 0 to 24 local lunar solar time
   timeUntilSunriseHours: number | null;
   timeUntilSunsetHours: number | null;
+
+  synodicSummary?: SynodicCycleSummary;
 }

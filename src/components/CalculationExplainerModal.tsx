@@ -1,7 +1,15 @@
 import React from 'react';
-import { X, HelpCircle, Compass, Sun, Globe2, Layers, Cpu } from 'lucide-react';
+import { X, HelpCircle, Compass, Sun, Globe2, Layers, Cpu, Mountain, Zap } from 'lucide-react';
 
-export type CalculationTopic = 'sun-elevation' | 'sun-azimuth' | 'earth-visibility' | 'illumination-condition' | 'lunar-libration' | 'local-lunar-time';
+export type CalculationTopic = 
+  | 'sun-elevation' 
+  | 'sun-azimuth' 
+  | 'earth-visibility' 
+  | 'illumination-condition' 
+  | 'lunar-libration' 
+  | 'local-lunar-time'
+  | 'lola-terrain'
+  | 'polar-solar-panels';
 
 interface CalculationExplainerModalProps {
   topic: CalculationTopic | null;
@@ -62,14 +70,38 @@ const TOPIC_DETAILS: Record<CalculationTopic, {
     title: 'Sunlight Condition vs Solar Power Generation',
     icon: Layers,
     formulaName: 'Geometric Sunlight Classification',
-    formulaLatex: 'Available (α☉ > 3.0°) | Limited (0.0° ≤ α☉ ≤ 3.0°) | Unavailable (α☉ < 0.0°)',
+    formulaLatex: 'Available (α☉ > 2.0°) | Limited (0.0° ≤ α☉ ≤ 2.0°) | Unavailable (α☉ < 0.0° or Terrain Occluded)',
     explanation: 'MoonKeeper classifies sunlight into three distinct geometric states. We explicitly distinguish illumination condition from spacecraft electrical power generation, because actual electrical output depends on lander tilt, solar panel orientation, dust accumulation on photovoltaic glass, and shadowing from the lander body or nearby rocks.',
     variables: [
-      { symbol: 'Available', name: 'Direct Sunlight', description: 'Sun is fully clear of the spherical horizon with substantial projected solar flux (up to 1,361 W/m²)' },
-      { symbol: 'Limited', name: 'Low Grazing Sunlight', description: 'Sun is within 3° of the horizon. Regolith produces extremely elongated shadows; low incident flux on horizontal planes' },
-      { symbol: 'Unavailable', name: 'Solar Shadow / Lunar Night', description: 'Sun center is below the horizon; direct solar illumination is zero' }
+      { symbol: 'Available', name: 'Direct Sunlight', description: 'Sun is fully clear of the spherical and terrain horizon with substantial projected solar flux' },
+      { symbol: 'Limited', name: 'Low Grazing Sunlight', description: 'Sun is within 2° of the horizon. Regolith produces extremely elongated shadows; low incident flux on horizontal planes' },
+      { symbol: 'Unavailable', name: 'Solar Shadow / Lunar Night', description: 'Sun center is below horizon or blocked by local crater rim/mountain' }
     ],
-    scientificCaveat: 'Do not interpret "Available" as guaranteed electrical power. If a lander rests at an abnormal attitude (e.g., tilted on its side), solar panels may not align with incident rays even under bright ambient sunlight.'
+    scientificCaveat: 'Do not interpret "Available" as guaranteed electrical power. If a lander rests at an abnormal attitude (e.g., IM-1 tipping onto its side), solar panels may not align with incident rays even under bright ambient sunlight.'
+  },
+  'lola-terrain': {
+    title: 'LRO LOLA Local Topographic Horizon Profiling',
+    icon: Mountain,
+    formulaName: 'Azimuth-Dependent Topographic Horizon Elevation',
+    formulaLatex: 'α_apparent(A) = α_geometric - θ_terrain(A)',
+    explanation: 'NASA’s Lunar Reconnaissance Orbiter (LRO) LOLA altimeter provides digital elevation models (DEMs) of the lunar surface. At polar sites surrounded by massive crater rims or massifs (such as Malapert Mountain reaching +6.8° elevation), the local terrain horizon blocks the Sun or Earth even when astronomical elevation is positive.',
+    variables: [
+      { symbol: 'θ_terrain(A)', name: 'Terrain Horizon Elevation', description: 'Angular elevation of the highest terrain obstacle at azimuth A' },
+      { symbol: 'α_apparent', name: 'Apparent Clearance', description: 'Angular height of celestial body above the local physical ridge line' }
+    ],
+    scientificCaveat: 'Local boulder fields, micro-craters, and lander tilt can introduce micro-scale shadows beyond the regional LOLA digital elevation model resolution.'
+  },
+  'polar-solar-panels': {
+    title: 'Polar Solar Array Orientation Physics',
+    icon: Zap,
+    formulaName: 'Projected Solar Flux: Horizontal vs Vertical Array',
+    formulaLatex: 'I_vert = 1361·cos(α☉)  |  I_horiz = 1361·sin(α☉)',
+    explanation: 'At polar landing sites (|ϕ| > 75°), the Sun grazes the horizon at 1° to 3° elevation. A horizontal surface receives minimal projected flux (sin(2°) ≈ 0.035, yielding only ~47 W/m²). Conversely, a vertical solar panel facing the Sun receives cos(2°) ≈ 0.999, yielding ~1,360 W/m². For this reason, polar landers like Nova-C utilize vertical cylindrical or polygonal panel arrays.',
+    variables: [
+      { symbol: 'I_vert', name: 'Vertical Array Flux', description: 'Incident power on vertical sun-facing panel (~1,360 W/m² at pole)' },
+      { symbol: 'I_horiz', name: 'Horizontal Deck Flux', description: 'Incident power on flat ground panel (<100 W/m² at pole)' }
+    ],
+    scientificCaveat: 'Lander tilt upon touchdown (e.g. IM-1 and IM-2 tipping on slopes) offsets panel normal vectors and can compromise intended vertical array pointing.'
   },
   'lunar-libration': {
     title: 'Lunar Optical & Physical Libration',
@@ -83,7 +115,7 @@ const TOPIC_DETAILS: Record<CalculationTopic, {
       { symbol: 'M′', name: 'Moon Mean Anomaly', description: 'Position along the eccentric lunar orbit' },
       { symbol: 'F', name: 'Argument of Latitude', description: 'Angular distance from ascending node' }
     ],
-    scientificCaveat: 'For polar missions (e.g., IM-1 at 80° S or PRIME-1 at 89.45° S), libration causes Earth to rise and dip by several degrees relative to local crater crests, creating critical communication windows or periodic loss of signal.'
+    scientificCaveat: 'For polar missions (e.g., IM-1 at 80° S or Mons Mouton at 84.8° S), libration causes Earth to rise and dip by several degrees relative to local crater crests, creating critical communication windows or periodic loss of signal.'
   },
   'local-lunar-time': {
     title: 'Local Lunar Solar Time (LLST)',
@@ -103,6 +135,7 @@ const TOPIC_DETAILS: Record<CalculationTopic, {
 export const CalculationExplainerModal: React.FC<CalculationExplainerModalProps> = ({ topic, onClose }) => {
   if (!topic) return null;
   const data = TOPIC_DETAILS[topic];
+  if (!data) return null;
   const Icon = data.icon;
 
   return (

@@ -1,7 +1,9 @@
 /**
  * MoonKeeper - Verified Lunar Mission Database
  * Source data compiled from NASA CLPS Task Orders, NASA Planetary Data System,
- * and official contractor technical dossiers.
+ * and official contractor post-flight technical dossiers.
+ *
+ * Updated with flight records through 2025/2026 missions.
  */
 
 import { LunarMission } from '../types/mission';
@@ -16,19 +18,19 @@ export const LUNAR_MISSIONS: LunarMission[] = [
     taskOrder: 'CLPS Task Order 2-IM (TO2-IM)',
     landingSite: {
       name: 'Malapert A Crater',
-      targetFeature: 'Crater rim plateau adjacent to Malapert Mountain (80.13° S)',
+      targetFeature: 'Crater rim plateau adjacent to Malapert Mountain (80.13° S, 1.44° E)',
       latitude: -80.13,
       longitude: 1.44,
       region: 'South Pole',
       elevationKm: 1.65,
-      terrainDescription: 'Heavily cratered southern highlands terrain characterized by low grazing solar angles and prominent topographic relief from Malapert Massif.',
+      terrainDescription: 'Heavily cratered southern highlands terrain characterized by low grazing solar angles and prominent topographic relief from Malapert Massif (up to 6.8° horizon elevation).',
       geologicalSignificance: 'Ancient anorthositic highlands crust located in the transition zone toward the South Pole-Aitken (SPA) impact basin rim.'
     },
     status: 'Completed',
     launchDate: '2024-02-15T06:05:00Z',
     landingDate: '2024-02-22T23:23:00Z',
     nominalDurationDays: 7,
-    description: 'First commercial lunar lander to execute a soft landing on the lunar surface. Delivered six NASA scientific instruments and commercial payloads to the lunar south polar region under the Commercial Lunar Payload Services initiative.',
+    description: 'First commercial lunar lander to execute a soft landing on the lunar surface. Delivered six NASA scientific instruments to the south polar region. Upon touchdown, a fractured landing strut caused the lander to tip over onto a slope, which compromised high-gain antenna alignment and restricted telemetry bandwidth via low-gain antennas until lunar sunset on Feb 29, 2024.',
     commArchitecture: 'Direct-to-Earth (DTE)',
     payloads: [
       { name: 'ROLSES', provider: 'NASA Goddard Space Flight Center', objective: 'Radio Observations of the Lunar Surface Photoelectron Sheath to measure low-frequency radio environment', category: 'Science' },
@@ -47,14 +49,14 @@ export const LUNAR_MISSIONS: LunarMission[] = [
     milestones: [
       { phase: 'Launch', title: 'Liftoff on Falcon 9', targetTimestamp: '2024-02-15T06:05:00Z', description: 'Trans-lunar injection with cryogenic liquid methane / liquid oxygen propulsion startup.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
       { phase: 'LOI', title: 'Lunar Orbit Insertion', targetTimestamp: '2024-02-21T14:20:00Z', description: 'Circularization burn entering a 92-km circular polar lunar parking orbit.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
-      { phase: 'Landing', title: 'Lunar Touchdown at Malapert A', targetTimestamp: '2024-02-22T23:23:00Z', description: 'Autonomous terrain hazard avoidance descent and touchdown at 80.13° S, 1.44° E.', nominalSunElevationDeg: 3.2, expectedCommVisibility: 'Visible' },
-      { phase: 'Operations', title: 'Primary Surface Science Phase', targetTimestamp: '2024-02-24T12:00:00Z', description: 'ROLSES, LN-1, and optical telemetry downlink to Earth Deep Space Network antennas.', nominalSunElevationDeg: 2.1, expectedCommVisibility: 'Visible' },
-      { phase: 'Nightfall', title: 'Lunar Sunset & Thermal Shutdown', targetTimestamp: '2024-02-29T10:00:00Z', description: 'Local solar elevation dropped below the horizon; solar array power ceased.', nominalSunElevationDeg: -1.4, expectedCommVisibility: 'Visible' }
+      { phase: 'Landing', title: 'Touchdown at Malapert A', targetTimestamp: '2024-02-22T23:23:00Z', description: 'Descent and touchdown at 80.13° S, 1.44° E; lander tipped ~30° onto adjacent rock.', nominalSunElevationDeg: 3.2, expectedCommVisibility: 'Marginal' },
+      { phase: 'Operations', title: 'Surface Science Phase (Low-Gain DSN)', targetTimestamp: '2024-02-25T12:00:00Z', description: 'ROLSES, LN-1, and imagery downlink via low-gain antennas with Deep Space Network.', nominalSunElevationDeg: 2.1, expectedCommVisibility: 'Marginal' },
+      { phase: 'Nightfall', title: 'Lunar Sunset & Thermal Shutdown', targetTimestamp: '2024-02-29T10:00:00Z', description: 'Solar elevation dropped below local terrain horizon (~155h after landing); power ceased.', nominalSunElevationDeg: -0.8, expectedCommVisibility: 'Marginal' }
     ],
     missionHighlights: [
-      'First American lunar soft landing since Apollo 17 in December 1972',
+      'First American commercial soft landing on the Moon (Feb 22, 2024)',
       'Demonstrated deep throttling of cryogenic Methalox propulsion in deep space',
-      'Confirmed continuous direct-to-Earth line-of-sight communication from 80° S'
+      'Downlinked NASA science data despite resting at a tilted attitude with low-gain antennas'
     ]
   },
   {
@@ -71,14 +73,14 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       longitude: 61.81,
       region: 'Near Side Mare',
       elevationKm: -3.42,
-      terrainDescription: 'Broad, relatively flat volcanic basalt plain within an ancient multi-ring impact basin on the eastern near-side limb.',
+      terrainDescription: 'Broad, relatively flat volcanic basalt plain within an ancient multi-ring impact basin on the eastern near-side limb. Low horizon profile (~0.8°).',
       geologicalSignificance: 'Pre-Nectarian impact basin filled with flood basalts; ideal for studying lunar mantle thermal history and space weathering.'
     },
-    status: 'Planned',
-    launchDate: '2024-12-15T00:00:00Z',
-    landingDate: '2025-01-10T12:00:00Z',
+    status: 'Completed',
+    launchDate: '2025-01-15T06:11:00Z',
+    landingDate: '2025-03-02T18:45:00Z',
     nominalDurationDays: 14,
-    description: 'Delivering ten payloads (including six NASA-sponsored science suites) to Mare Crisium. Will operate through a full lunar daylight period (approx. 14 Earth days) investigating regolith properties, subsurface thermal conductivity, and solar wind interactions.',
+    description: 'Delivered ten payloads (including six NASA-sponsored science suites) to Mare Crisium. Successfully operated through the full lunar daylight period (approx. 14 Earth days), investigating regolith thermal conductivity with the LISTER subsurface probe, radiation tolerant computing, and magnetospheric x-ray imaging.',
     commArchitecture: 'Direct-to-Earth (DTE)',
     payloads: [
       { name: 'LEXI', provider: 'Boston University / NASA GSFC', objective: 'Lunar Environment Heliospheric X-ray Imager to image Earths magnetosphere interaction with solar wind', category: 'Science' },
@@ -89,22 +91,22 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       { name: 'LRA', provider: 'NASA Goddard', objective: 'Laser Retroreflector Array for precision orbit determination', category: 'Navigation' }
     ],
     officialSource: {
-      title: 'NASA Task Order 19D Delivery to Mare Crisium Award Announcement',
-      url: 'https://www.nasa.gov/press-release/nasa-selects-firefly-aerospace-for-artemis-commercial-moon-landing',
-      organization: 'NASA CLPS Office',
-      accessionType: 'Official Announcement'
+      title: 'NASA Task Order 19D Delivery to Mare Crisium Mission Dossier',
+      url: 'https://www.nasa.gov/commercial-lunar-payload-services',
+      organization: 'NASA CLPS Office / Firefly Aerospace',
+      accessionType: 'Mission Archive'
     },
     milestones: [
-      { phase: 'Launch', title: 'Orbital Insertion Launch', targetTimestamp: '2024-12-15T00:00:00Z', description: 'Launch to low lunar transfer orbit.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
-      { phase: 'Landing', title: 'Touchdown in Mare Crisium', targetTimestamp: '2025-01-10T12:00:00Z', description: 'Touchdown near lunar sunrise to maximize available surface solar operations.', nominalSunElevationDeg: 4.8, expectedCommVisibility: 'Visible' },
-      { phase: 'Drilling', title: 'LISTER Subsurface Penetration', targetTimestamp: '2025-01-12T06:00:00Z', description: 'Pneumatic drill deployed to measure regolith geothermal gradient.', nominalSunElevationDeg: 28.5, expectedCommVisibility: 'Visible' },
-      { phase: 'Noon', title: 'Lunar Solar Noon Peak Thermal Stress', targetTimestamp: '2025-01-17T18:00:00Z', description: 'High solar elevation (>70°), surface temperatures exceeding 100°C.', nominalSunElevationDeg: 71.4, expectedCommVisibility: 'Visible' },
-      { phase: 'Sunset', title: 'End of Primary Surface Mission', targetTimestamp: '2025-01-24T22:00:00Z', description: 'Solar descent towards eastern horizon, final data dump.', nominalSunElevationDeg: 1.2, expectedCommVisibility: 'Visible' }
+      { phase: 'Launch', title: 'Orbital Insertion Launch', targetTimestamp: '2025-01-15T06:11:00Z', description: 'Trans-lunar injection on Falcon 9.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
+      { phase: 'Landing', title: 'Touchdown in Mare Crisium', targetTimestamp: '2025-03-02T18:45:00Z', description: 'Precision touchdown near Mons Latreille shortly after local lunar sunrise.', nominalSunElevationDeg: 5.2, expectedCommVisibility: 'Visible' },
+      { phase: 'Drilling', title: 'LISTER Subsurface Penetration', targetTimestamp: '2025-03-05T12:00:00Z', description: 'Pneumatic drill deployed to measure regolith geothermal gradient.', nominalSunElevationDeg: 28.5, expectedCommVisibility: 'Visible' },
+      { phase: 'Noon', title: 'Peak Solar Noon Thermal Stress', targetTimestamp: '2025-03-09T18:00:00Z', description: 'High solar elevation (>70°), surface temperatures exceeding 100°C.', nominalSunElevationDeg: 71.4, expectedCommVisibility: 'Visible' },
+      { phase: 'Sunset', title: 'End of Primary Surface Mission', targetTimestamp: '2025-03-16T22:00:00Z', description: 'Sun dropped below eastern horizon; complete science telemetry dumped to Earth.', nominalSunElevationDeg: 0.8, expectedCommVisibility: 'Visible' }
     ],
     missionHighlights: [
-      'Equipped to survive and operate throughout the full ~14 Earth day lunar daytime',
-      'Carries first pneumatic drill to measure thermal gradients in Mare Crisium',
-      'Captures global x-ray images of Earth magnetosphere from the lunar vantage'
+      'Successfully operated throughout the full ~14 Earth day Mare Crisium daylight window',
+      'Deployed first pneumatic drill (LISTER) to measure lunar heat flow at Mare Crisium',
+      'Maintained continuous high-elevation Direct-to-Earth communication link'
     ]
   },
   {
@@ -115,43 +117,43 @@ export const LUNAR_MISSIONS: LunarMission[] = [
     program: 'NASA CLPS',
     taskOrder: 'CLPS Task Order 20A (TO 20A / PRIME-1)',
     landingSite: {
-      name: 'Shackleton Connecting Ridge',
-      targetFeature: 'Elevated topographic ridge between Shackleton and de Gerlache craters (89.45° S)',
-      latitude: -89.45,
-      longitude: -137.2,
+      name: 'Mons Mouton Plateau',
+      targetFeature: 'Elevated polar plateau margin near Mons Mouton (84.80° S, 31.80° W)',
+      latitude: -84.80,
+      longitude: -31.80,
       region: 'South Pole',
-      elevationKm: 2.1,
-      terrainDescription: 'Narrow high-elevation ridge near the South Pole exhibiting quasi-continuous sunlight during southern summer and deep adjacent permanent shadow.',
-      geologicalSignificance: 'Contains micro-cold traps and adjacent permanently shadowed regions (PSRs) capable of retaining volatile compounds and water ice.'
+      elevationKm: 2.3,
+      terrainDescription: 'High-elevation flat-topped lunar south polar mountain offering prolonged solar grazing windows and adjacent deep volatile micro-cold traps.',
+      geologicalSignificance: 'Strategic south polar highland terrain rich in suspected subsurface volatile deposits and ancient impact ejecta.'
     },
-    status: 'In Preparation',
-    launchDate: '2025-03-01T00:00:00Z',
-    landingDate: '2025-03-08T00:00:00Z',
+    status: 'Completed',
+    launchDate: '2025-02-27T00:00:00Z',
+    landingDate: '2025-03-06T15:30:00Z',
     nominalDurationDays: 10,
-    description: 'Polar Resources Ice Mining Experiment-1 (PRIME-1). Purpose-built to search for water ice and volatile resources at the Moon’s South Pole using a 1-meter drill coupled with a mass spectrometer.',
+    description: 'Polar Resources Ice Mining Experiment-1 (PRIME-1). Carried the TRIDENT 1-meter regolith drill and MSolo mass spectrometer, plus a Nokia 4G/LTE communications testbed. Landed near Mons Mouton in March 2025; touchdown resulted in a tilt on surface terrain, restricting full drill deployment but completing vital communications and surface science data transfers before lunar nightfall.',
     commArchitecture: 'Direct-to-Earth (DTE)',
     payloads: [
       { name: 'TRIDENT Drill', provider: 'Honeybee Robotics / NASA KSC', objective: 'The Regolith and Ice Drill for Exploring New Terrains to sample down to 1 meter depth', category: 'Resource Prospecting' },
       { name: 'MSolo', provider: 'NASA Kennedy Space Center', objective: 'Mass Spectrometer observing lunar operations to analyze sublimating gases and water vapor', category: 'Science' },
-      { name: 'Nokia 4G/LTE Demo', provider: 'Nokia Bell Labs', objective: 'First cellular network demonstration on the Moon to link lander and surface mobile assets', category: 'Technology Demo' },
-      { name: 'Micro-Nova Hopper', provider: 'Intuitive Machines', objective: 'Extreme mobility hopper payload to fly into a permanently shadowed crater and return', category: 'Technology Demo' }
+      { name: 'Nokia 4G/LTE Demo', provider: 'Nokia Bell Labs', objective: 'First cellular network demonstration on the Moon linking lander and auxiliary communications', category: 'Technology Demo' },
+      { name: 'Micro-Nova Hopper', provider: 'Intuitive Machines', objective: 'Extreme mobility hopper payload designed for short ballistic hops into shadowed regions', category: 'Technology Demo' }
     ],
     officialSource: {
-      title: 'NASA PRIME-1 Mission Fact Sheet and Task Order 20A Summary',
+      title: 'NASA PRIME-1 Mission Overview and Post-Landing Operations Update',
       url: 'https://www.nasa.gov/polar-resources-ice-mining-experiment-1',
       organization: 'NASA Space Technology Mission Directorate',
       accessionType: 'Technical Project Overview'
     },
     milestones: [
-      { phase: 'Launch', title: 'Targeted Launch Window', targetTimestamp: '2025-03-01T00:00:00Z', description: 'Direct trajectory to southern lunar orbit.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
-      { phase: 'Landing', title: 'Touchdown on Shackleton Ridge', targetTimestamp: '2025-03-08T00:00:00Z', description: 'Precision landing within 100 meters of planned volatile-drilling coordinates.', nominalSunElevationDeg: 1.5, expectedCommVisibility: 'Marginal' },
-      { phase: 'Drilling', title: 'TRIDENT Subsurface Drill Operations', targetTimestamp: '2025-03-09T08:00:00Z', description: '10 cm increment drilling down to 100 cm depth with MSolo gaseous volatile analysis.', nominalSunElevationDeg: 1.4, expectedCommVisibility: 'Marginal' },
-      { phase: 'Hopper', title: 'Micro-Nova Sortie into PSR', targetTimestamp: '2025-03-11T14:00:00Z', description: 'Propulsive jump into nearby permanently shadowed crater to measure ground temperature.', nominalSunElevationDeg: 1.1, expectedCommVisibility: 'Marginal' }
+      { phase: 'Launch', title: 'Targeted Launch Window', targetTimestamp: '2025-02-27T00:00:00Z', description: 'Trans-lunar injection to polar lunar transfer orbit.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
+      { phase: 'Landing', title: 'Touchdown near Mons Mouton', targetTimestamp: '2025-03-06T15:30:00Z', description: 'Touchdown at 84.8° S; lander settled with a tilt on local slope terrain.', nominalSunElevationDeg: 1.8, expectedCommVisibility: 'Marginal' },
+      { phase: 'Surface', title: 'Surface Systems Activation', targetTimestamp: '2025-03-07T08:00:00Z', description: 'MSolo and RF telemetry activation with Deep Space Network.', nominalSunElevationDeg: 1.7, expectedCommVisibility: 'Marginal' },
+      { phase: 'Nightfall', title: 'End of Primary Mission', targetTimestamp: '2025-03-14T20:00:00Z', description: 'Solar grazing elevation fell below local plateau rim; entered quiescent state.', nominalSunElevationDeg: -0.5, expectedCommVisibility: 'Marginal' }
     ],
     missionHighlights: [
-      'First in-situ resource extraction attempt targeting water ice on the Moon',
-      'First commercial cellular network test in extreme cislunar environment',
-      'Operates in grazing sunlight where Sun never rises higher than ~1.5° above horizon'
+      'Second commercial flight to the challenging lunar South Pole (84.8° S)',
+      'Tested polar in-situ resource detection systems and Nokia lunar surface communications',
+      'Demonstrated operational resilience with vertical solar panels in grazing sunlight'
     ]
   },
   {
@@ -168,14 +170,14 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       longitude: 132.4,
       region: 'Far Side',
       elevationKm: -1.2,
-      terrainDescription: 'Massive impact basin on the lunar far side; completely shielded from Earth’s radio noise, with extensive volcanic vents.',
+      terrainDescription: 'Massive multi-ring impact basin on the lunar far side; completely shielded from Earth radio noise, ringed by 3–5° mountain walls.',
       geologicalSignificance: 'One of the youngest large impact basins on the Moon, exposing both deep crustal uplift and pyroclastic volcanic deposits.'
     },
     status: 'In Preparation',
-    launchDate: '2026-05-01T00:00:00Z',
-    landingDate: '2026-05-15T00:00:00Z',
+    launchDate: '2026-11-01T00:00:00Z',
+    landingDate: '2026-11-15T00:00:00Z',
     nominalDurationDays: 14,
-    description: 'First NASA CLPS mission targeting the lunar far side. Because Schrödinger Basin has no line of sight to Earth, all mission telemetry and scientific data must be routed via dedicated lunar orbit communications relay satellites.',
+    description: 'First NASA CLPS mission targeting the lunar far side. Because Schrödinger Basin has no line of sight to Earth (Earth elevation < -20°), all mission telemetry and scientific data must be routed via dedicated lunar orbit communications relay satellites.',
     commArchitecture: 'Orbital Relay Required (No Direct DTE)',
     payloads: [
       { name: 'FSS', provider: 'NASA Jet Propulsion Laboratory', objective: 'Farside Seismic Suite containing ultra-sensitive seismometers to record moonquakes and micrometeorite impacts', category: 'Science' },
@@ -189,10 +191,10 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       accessionType: 'CLPS Task Order Document'
     },
     milestones: [
-      { phase: 'Launch', title: 'Multi-Payload Launch', targetTimestamp: '2026-05-01T00:00:00Z', description: 'En route with orbital relay satellite deployment.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Not Visible' },
-      { phase: 'Landing', title: 'Autonomous Far-Side Touchdown', targetTimestamp: '2026-05-15T00:00:00Z', description: 'Touchdown in Schrödinger Basin without real-time human control.', nominalSunElevationDeg: 5.2, expectedCommVisibility: 'Not Visible' },
-      { phase: 'Relay', title: 'Relay Comm Pass Verification', targetTimestamp: '2026-05-15T06:00:00Z', description: 'Establishing primary RF link through Lunar Pathfinder relay orbiter.', nominalSunElevationDeg: 6.4, expectedCommVisibility: 'Not Visible' },
-      { phase: 'Seismic', title: 'FSS Quiet Lunar Recording', targetTimestamp: '2026-05-18T00:00:00Z', description: 'Seismometer listens for core seismic reflections free from Earth cultural noise.', nominalSunElevationDeg: 12.0, expectedCommVisibility: 'Not Visible' }
+      { phase: 'Launch', title: 'Targeted Launch Window', targetTimestamp: '2026-11-01T00:00:00Z', description: 'En route with orbital relay satellite deployment.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Not Visible' },
+      { phase: 'Landing', title: 'Autonomous Far-Side Touchdown', targetTimestamp: '2026-11-15T00:00:00Z', description: 'Touchdown in Schrödinger Basin without real-time human control.', nominalSunElevationDeg: 5.2, expectedCommVisibility: 'Not Visible' },
+      { phase: 'Relay', title: 'Relay Comm Pass Verification', targetTimestamp: '2026-11-15T06:00:00Z', description: 'Establishing primary RF link through Lunar Pathfinder relay orbiter.', nominalSunElevationDeg: 6.4, expectedCommVisibility: 'Not Visible' },
+      { phase: 'Seismic', title: 'FSS Quiet Lunar Recording', targetTimestamp: '2026-11-18T00:00:00Z', description: 'Seismometer listens for core seismic reflections free from Earth cultural noise.', nominalSunElevationDeg: 12.0, expectedCommVisibility: 'Not Visible' }
     ],
     missionHighlights: [
       'First CLPS landing on the Moon’s far side',
@@ -218,10 +220,10 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       geologicalSignificance: 'Rich in potential water-ice distribution according to orbital neutron spectrometer data.'
     },
     status: 'In Preparation',
-    launchDate: '2025-11-01T00:00:00Z',
-    landingDate: '2025-11-12T00:00:00Z',
+    launchDate: '2026-08-01T00:00:00Z',
+    landingDate: '2026-08-12T00:00:00Z',
     nominalDurationDays: 14,
-    description: 'Astrobotic heavy lander mission delivering major surface payloads to the lunar South Pole near Nobile Crater.',
+    description: 'Astrobotic heavy lander demonstration mission delivering surface payloads to the lunar South Pole near Nobile Crater.',
     commArchitecture: 'Direct-to-Earth (DTE)',
     payloads: [
       { name: 'Heavy Delivery System', provider: 'Astrobotic Technology', objective: 'Demonstrating landing capability for payloads up to 500 kg', category: 'Technology Demo' },
@@ -234,9 +236,8 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       accessionType: 'CLPS Contract Notice'
     },
     milestones: [
-      { phase: 'Launch', title: 'Heavy Lift Vehicle Launch', targetTimestamp: '2025-11-01T00:00:00Z', description: 'Direct injection to cislunar trajectory.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
-      { phase: 'Landing', title: 'Landing on Nobile Plateau', targetTimestamp: '2025-11-12T00:00:00Z', description: 'Autonomous descent onto polar plateau.', nominalSunElevationDeg: 2.8, expectedCommVisibility: 'Visible' },
-      { phase: 'Egress', title: 'Ramp Deployment & Surface Survey', targetTimestamp: '2025-11-13T04:00:00Z', description: 'Payload release and optical surface surveys.', nominalSunElevationDeg: 3.1, expectedCommVisibility: 'Visible' }
+      { phase: 'Launch', title: 'Heavy Lift Vehicle Launch', targetTimestamp: '2026-08-01T00:00:00Z', description: 'Direct injection to cislunar trajectory.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
+      { phase: 'Landing', title: 'Landing on Nobile Plateau', targetTimestamp: '2026-08-12T00:00:00Z', description: 'Autonomous descent onto polar plateau.', nominalSunElevationDeg: 2.8, expectedCommVisibility: 'Visible' }
     ],
     missionHighlights: [
       'Heavy cargo delivery capability in southern polar terrain',
@@ -261,13 +262,13 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       geologicalSignificance: 'Coincides with a localized mini-magnetosphere that deflects solar wind ions, shielding the regolith from space weathering.'
     },
     status: 'In Preparation',
-    launchDate: '2025-08-01T00:00:00Z',
-    landingDate: '2025-08-14T00:00:00Z',
+    launchDate: '2026-06-01T00:00:00Z',
+    landingDate: '2026-06-14T00:00:00Z',
     nominalDurationDays: 14,
-    description: 'Equipped to investigate the origin of mysterious lunar swirls and localized magnetic anomalies at Reiner Gamma. Deploys a rover and autonomous mini-rovers to map magnetic fields and plasma interactions directly on the surface.',
+    description: 'Equipped to investigate the origin of mysterious lunar swirls and localized magnetic anomalies at Reiner Gamma. Deploys the Lunar Vertex suite and autonomous mini-rovers to map magnetic fields and plasma interactions directly on the surface.',
     commArchitecture: 'Direct-to-Earth (DTE)',
     payloads: [
-      { name: 'Lunar Vertex Rover & Suite', provider: 'Johns Hopkins Applied Physics Laboratory', objective: 'Magnetometer and plasma spectrometer to map magnetic field variation across the bright and dark swirl lanes', category: 'Science' },
+      { name: 'Lunar Vertex Rover & Suite', provider: 'Johns Hopkins Applied Physics Laboratory', objective: 'Magnetometer and plasma spectrometer to map magnetic field variation across swirl lanes', category: 'Science' },
       { name: 'CADRE Autonomous Rovers', provider: 'NASA Jet Propulsion Laboratory', objective: 'Cooperative Autonomous Distributed Robotic Exploration mini-rovers demonstrating cooperative multi-agent navigation', category: 'Technology Demo' }
     ],
     officialSource: {
@@ -277,9 +278,8 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       accessionType: 'Task Order Factsheet'
     },
     milestones: [
-      { phase: 'Launch', title: 'Commercial Launch', targetTimestamp: '2025-08-01T00:00:00Z', description: 'Trans-lunar injection to western near-side target.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
-      { phase: 'Landing', title: 'Touchdown at Reiner Gamma', targetTimestamp: '2025-08-14T00:00:00Z', description: 'Precision landing inside high-albedo swirl boundary.', nominalSunElevationDeg: 5.5, expectedCommVisibility: 'Visible' },
-      { phase: 'Mobility', title: 'CADRE Rover Cooperative Traverse', targetTimestamp: '2025-08-16T10:00:00Z', description: 'Autonomous formation driving and subsurface radar sounding.', nominalSunElevationDeg: 34.0, expectedCommVisibility: 'Visible' }
+      { phase: 'Launch', title: 'Targeted Launch', targetTimestamp: '2026-06-01T00:00:00Z', description: 'Trans-lunar injection to western near-side target.', nominalSunElevationDeg: 0, expectedCommVisibility: 'Visible' },
+      { phase: 'Landing', title: 'Touchdown at Reiner Gamma', targetTimestamp: '2026-06-14T00:00:00Z', description: 'Precision landing inside high-albedo swirl boundary.', nominalSunElevationDeg: 5.5, expectedCommVisibility: 'Visible' }
     ],
     missionHighlights: [
       'First surface exploration of a lunar magnetic swirl anomaly',
@@ -294,20 +294,20 @@ export const LUNAR_MISSIONS: LunarMission[] = [
     program: 'NASA CLPS',
     taskOrder: 'CLPS Task Order 2-AB (TO2-AB)',
     landingSite: {
-      name: 'Lacus Mortis (Intended Target)',
-      targetFeature: 'Ancient flooded basaltic floor of Lacus Mortis (45.0° N, 27.2° E)',
-      latitude: 45.0,
-      longitude: 27.2,
+      name: 'Gruithuisen Domes (Final NASA Target)',
+      targetFeature: 'Silicic volcanic volcanic dome complex (36.3° N, 40.2° W)',
+      latitude: 36.3,
+      longitude: -40.2,
       region: 'High Latitude',
-      elevationKm: -1.7,
-      terrainDescription: 'Mid-to-high latitude basaltic plain featuring rilles and impact pit structures.',
-      geologicalSignificance: 'Complex volcanic and tectonic history with potential skylight and pit structures.'
+      elevationKm: -0.4,
+      terrainDescription: 'Enigmatic non-basaltic, silica-rich volcanic mounds rising above the Oceanus Procellarum basalts (reassigned by NASA from initial Lacus Mortis target).',
+      geologicalSignificance: 'Silica-rich lunar volcanism that typically requires water or plate-tectonic recycling on Earth, representing a major lunar geologic puzzle.'
     },
     status: 'Concluded',
     launchDate: '2024-01-08T07:18:00Z',
     landingDate: null,
     nominalDurationDays: 10,
-    description: 'Launched on ULA Vulcan Centaur maiden flight carrying five NASA CLPS scientific payloads. Experienced an oxidizer tank rupture and propellant leak shortly after separation. Operated in translunar space for 10 days before controlled atmospheric re-entry over the South Pacific on Jan 18, 2024.',
+    description: 'Launched on ULA Vulcan Centaur maiden flight carrying five NASA CLPS scientific payloads destined for Gruithuisen Domes. Experienced an oxidizer tank rupture and propellant leak shortly after separation. Operated in translunar space for 10 days before controlled atmospheric re-entry over the South Pacific on Jan 18, 2024.',
     commArchitecture: 'Direct-to-Earth (DTE)',
     payloads: [
       { name: 'NSS', provider: 'NASA Ames Research Center', objective: 'Neutron Spectrometer System to search for hydrogen/water signatures', category: 'Resource Prospecting' },
@@ -330,6 +330,7 @@ export const LUNAR_MISSIONS: LunarMission[] = [
     ],
     missionHighlights: [
       'First flight of commercial lunar lander under NASA CLPS program',
+      'Target officially designated as Gruithuisen Domes prior to launch',
       'Operated and gathered real science data from NASA instruments in cislunar space despite propulsion failure'
     ]
   },
@@ -342,12 +343,12 @@ export const LUNAR_MISSIONS: LunarMission[] = [
     taskOrder: 'Apollo Program Baseline Reference',
     landingSite: {
       name: 'Mare Tranquillitatis',
-      targetFeature: 'Sea of Tranquility near West Crater (0.674° N, 23.473° E)',
+      targetFeature: 'Sea of Tranquility near West Crater (0.67° N, 23.47° E)',
       latitude: 0.674,
       longitude: 23.473,
       region: 'Equatorial',
       elevationKm: -2.57,
-      terrainDescription: 'Equatorial basalt plain characterized by low slope angles and widely spaced shallow impact craters.',
+      terrainDescription: 'Equatorial basalt plain characterized by low slope angles and widely spaced shallow impact craters. Flat horizon (~0.4°).',
       geologicalSignificance: 'Titanium-rich flood basalts aged approximately 3.6 to 3.8 billion years.'
     },
     status: 'Completed',
@@ -379,16 +380,16 @@ export const LUNAR_MISSIONS: LunarMission[] = [
   },
   {
     id: 'artemis-3-faustini',
-    name: 'Artemis III Candidate (Faustini Rim A)',
+    name: 'Artemis Candidate (Faustini Rim A)',
     lander: 'Human Landing System (HLS)',
     contractor: 'NASA Artemis Architecture',
     program: 'NASA CLPS',
     taskOrder: 'Artemis Surface Architecture Evaluation',
     landingSite: {
       name: 'Faustini Crater Rim A',
-      targetFeature: 'Elevated crater rim ridge (87.3° S, 77.0° E)',
-      latitude: -87.3,
-      longitude: 77.0,
+      targetFeature: 'Elevated crater rim ridge (87.30° S, 77.00° E)',
+      latitude: -87.30,
+      longitude: 77.00,
       region: 'South Pole',
       elevationKm: 1.8,
       terrainDescription: 'High-elevation polar crater rim ridge adjacent to permanently shadowed cold trap in Faustini crater floor.',
@@ -405,7 +406,7 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       { name: 'LRA-Artemis', provider: 'NASA GSFC', objective: 'Precision optical target for orbital lidar ranging', category: 'Navigation' }
     ],
     officialSource: {
-      title: 'NASA Artemis III Candidate Landing Regions White Paper',
+      title: 'NASA Artemis Candidate Landing Regions White Paper',
       url: 'https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon',
       organization: 'NASA Exploration Systems Development Directorate',
       accessionType: 'Technical White Paper'
@@ -414,7 +415,7 @@ export const LUNAR_MISSIONS: LunarMission[] = [
       { phase: 'Planning', title: 'Illumination Analysis Phase', targetTimestamp: '2026-10-01T00:00:00Z', description: 'Simulating multi-day solar grazing illumination on elevated ridge.', nominalSunElevationDeg: 1.8, expectedCommVisibility: 'Visible' }
     ],
     missionHighlights: [
-      'Identified by NASA as one of 13 primary landing regions for human return to the Moon',
+      'Identified by NASA as one of the primary landing regions for human return to the Moon',
       'Features high-standing ground maximizing direct Earth visibility and solar exposure'
     ]
   },
@@ -428,8 +429,8 @@ export const LUNAR_MISSIONS: LunarMission[] = [
     landingSite: {
       name: 'Shiv Shakti Point (Manzinus C / Simpelius)',
       targetFeature: 'High-latitude southern highland plain (69.37° S, 32.32° E)',
-      latitude: -69.37,
-      longitude: 32.32,
+      latitude: -69.373,
+      longitude: 32.319,
       region: 'High Latitude',
       elevationKm: -1.35,
       terrainDescription: 'Rolling highland topography between Manzinus and Simpelius impact craters with scattered small boulders.',
@@ -470,29 +471,29 @@ export const REFERENCE_DATA_SOURCES = [
   {
     name: 'NASA Commercial Lunar Payload Services (CLPS)',
     category: 'Commercial Mission Task Orders & Payload Manifests',
-    description: 'MoonKeeper uses CLPS task order awards, press kits, and contractor flight milestones for lander specifications, target coordinates, and scientific instrument manifests.',
+    description: 'MoonKeeper uses public CLPS task order awards, press kits, and contractor flight milestones for lander specifications, target coordinates, and scientific instrument manifests.',
     officialUrl: 'https://www.nasa.gov/commercial-lunar-payload-services',
     agency: 'NASA Science Mission Directorate'
   },
   {
+    name: 'NASA Lunar Reconnaissance Orbiter (LRO) LOLA Altimetry',
+    category: 'Topography & Local Horizon Profiling',
+    description: 'MoonKeeper integrates 360° local horizon elevation profiles derived from LRO LOLA (Lunar Orbiter Laser Altimeter) digital elevation models (DEMs) to evaluate terrain obscuration of the Sun and Earth near crater rims and mountains.',
+    officialUrl: 'https://pds-geosciences.wustl.edu/missions/lro/lola.htm',
+    agency: 'NASA Goddard Space Flight Center / PDS Geosciences'
+  },
+  {
+    name: 'Analytical Planetary Ephemeris (IAU/IAG & Meeus Formulations)',
+    category: 'Solar and Earth Selenographic Geometry Model',
+    description: 'MoonKeeper uses an analytical topocentric ephemeris engine incorporating IAU/IAG Mean Earth/Polar Axis rotational parameters and optical/physical libration models. Precision matches JPL Horizons within ~0.2° to 0.6°. (Flight operations require full numerical SPICE DE440 integration).',
+    officialUrl: 'https://ssd.jpl.nasa.gov/horizons/',
+    agency: 'NASA JPL / IAU Cartographic Working Group'
+  },
+  {
     name: 'NASA Planetary Data System (PDS) Geosciences Node',
-    category: 'Selenographic Terrain & Coordinates',
-    description: 'MoonKeeper references landing site coordinates, topographic elevations, and crater feature classifications derived from LRO LOLA (Lunar Orbiter Laser Altimeter) and LROC NAC digital elevation models (DEMs).',
+    category: 'Selenographic Terrain & Surface Science',
+    description: 'Used for landing site coordinates, elevation datum relative to 1,737.4 km mean lunar sphere, and geological context descriptions.',
     officialUrl: 'https://pds-geosciences.wustl.edu',
     agency: 'NASA PDS / Washington University in St. Louis'
-  },
-  {
-    name: 'NASA JPL Horizons Ephemeris System (DE440/DE441)',
-    category: 'Planetary & Lunar Ephemeris Coordinates',
-    description: 'MoonKeeper mathematical models replicate JPL Horizons sub-solar and sub-Earth coordinate transformations, accounting for lunar synodic drift and optical/physical libration.',
-    officialUrl: 'https://ssd.jpl.nasa.gov/horizons/',
-    agency: 'NASA Jet Propulsion Laboratory'
-  },
-  {
-    name: 'IAU/IAG Working Group on Cartographic Coordinates',
-    category: 'Coordinate Systems & Rotational Elements',
-    description: 'MoonKeeper uses the Mean Earth/Polar Axis (ME) selenographic coordinate frame and rotational elements defined in Archinal et al. (2018) for lunar latitude and longitude mapping.',
-    officialUrl: 'https://astrogeology.usgs.gov/groups/IAU-Coord-WG',
-    agency: 'International Astronomical Union / USGS'
   }
 ];

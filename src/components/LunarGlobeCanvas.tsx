@@ -1,12 +1,15 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { LandingSite, LocalEnvironmentConditions, LunarEphemerisState } from '../types/mission';
-import { Compass, RotateCw, ZoomIn, ZoomOut, Eye, Sun, Globe2, Crosshair, Layers } from 'lucide-react';
+import { getTerrainProfileForSite } from '../utils/terrainProfiles';
+import { formatCoordinates, formatLatitude, formatLongitude } from '../utils/coordinateFormatting';
+import { Compass, RotateCw, ZoomIn, ZoomOut, Eye, Sun, Globe2, Crosshair, Layers, MapPin, Mountain } from 'lucide-react';
 
 interface LunarGlobeCanvasProps {
   site: LandingSite;
   conditions: LocalEnvironmentConditions;
   ephemeris: LunarEphemerisState;
   missionName: string;
+  onOpenCustomModal?: () => void;
 }
 
 // Major lunar maria selenographic coordinates and radii for rendering
@@ -28,7 +31,8 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
   site,
   conditions,
   ephemeris,
-  missionName
+  missionName,
+  onOpenCustomModal
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
@@ -44,6 +48,7 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
   const [showGrid, setShowGrid] = useState<boolean>(true);
   const [showLabels, setShowLabels] = useState<boolean>(true);
   const [showTerminator, setShowTerminator] = useState<boolean>(true);
+  const [showTerrainSilhouette, setShowTerrainSilhouette] = useState<boolean>(true);
 
   // Mouse drag interaction
   const isDraggingRef = useRef<boolean>(false);
@@ -55,21 +60,18 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
     setCenterLat(site.latitude);
   }, [site.name, site.latitude, site.longitude]);
 
-  // Center on site
   const handleCenterOnSite = () => {
     setCenterLon(site.longitude);
     setCenterLat(site.latitude);
     setZoom(1.0);
   };
 
-  // Reset to near side center (0, 0)
   const handleResetToNearSide = () => {
     setCenterLon(0);
     setCenterLat(0);
     setZoom(1.0);
   };
 
-  // Handle Dragging
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (viewMode !== 'globe') return;
     isDraggingRef.current = true;
@@ -106,7 +108,6 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Resize canvas to match display size
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     const width = rect.width;
@@ -136,12 +137,13 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
     showGrid,
     showLabels,
     showTerminator,
+    showTerrainSilhouette,
     site,
     conditions,
     ephemeris
   ]);
 
-  // --- RENDER GLOBE VIEW (Orthographic Projection) ---
+  // --- RENDER GLOBE VIEW ---
   const renderGlobeView = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     const cx = width / 2;
     const cy = height / 2;
@@ -151,21 +153,17 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
     const cLatRad = centerLat * deg2rad;
     const cLonRad = centerLon * deg2rad;
 
-    // Project (lat, lon) in degrees to (x, y, visible)
     const project = (latDeg: number, lonDeg: number): { x: number; y: number; visible: boolean; z: number } => {
       const lat = latDeg * deg2rad;
       const lon = lonDeg * deg2rad;
-
-      // Distance from center of projection
       const cosC = Math.sin(cLatRad) * Math.sin(lat) + Math.cos(cLatRad) * Math.cos(lat) * Math.cos(lon - cLonRad);
       const visible = cosC > 0.0;
-
       const x = cx + R * Math.cos(lat) * Math.sin(lon - cLonRad);
       const y = cy - R * (Math.cos(cLatRad) * Math.sin(lat) - Math.sin(cLatRad) * Math.cos(lat) * Math.cos(lon - cLonRad));
       return { x, y, visible, z: cosC };
     };
 
-    // 1. Space background & deep star field
+    // Space background
     ctx.fillStyle = '#05070B';
     ctx.fillRect(0, 0, width, height);
 
@@ -181,13 +179,12 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       }
     });
 
-    // 2. Lunar Globe base disk
+    // Lunar Globe base disk
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, R, 0, Math.PI * 2);
     ctx.clip();
 
-    // Regolith radial base gradient
     const globeGrad = ctx.createRadialGradient(cx - R * 0.25, cy - R * 0.25, R * 0.1, cx, cy, R);
     globeGrad.addColorStop(0, '#94A3B8');
     globeGrad.addColorStop(0.6, '#64748B');
@@ -195,14 +192,14 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
     ctx.fillStyle = globeGrad;
     ctx.fill();
 
-    // 3. Render Lunar Maria (Basalt Plains)
+    // Lunar Maria
     LUNAR_MARIA.forEach(maria => {
       const p = project(maria.lat, maria.lon);
       if (p.visible) {
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate((maria.rot * Math.PI) / 180);
-        ctx.scale(p.z, 1); // Foreshortening near the limb
+        ctx.scale(p.z, 1);
 
         const rX = (maria.radiusX / 90) * R;
         const rY = (maria.radiusY / 90) * R;
@@ -218,7 +215,6 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
         ctx.fill();
         ctx.restore();
 
-        // Label
         if (showLabels && p.z > 0.4) {
           ctx.fillStyle = 'rgba(226, 232, 240, 0.65)';
           ctx.font = '9px monospace';
@@ -228,12 +224,11 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       }
     });
 
-    // 4. Selenographic Coordinate Grid
+    // Selenographic Coordinate Grid
     if (showGrid) {
       ctx.strokeStyle = 'rgba(148, 163, 184, 0.20)';
       ctx.lineWidth = 1;
 
-      // Parallels (Latitudes: -60, -30, 0, 30, 60, -80)
       const lats = [-80, -60, -30, 0, 30, 60, 80];
       lats.forEach(lat => {
         ctx.beginPath();
@@ -241,43 +236,28 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
         for (let lon = -180; lon <= 180; lon += 5) {
           const pt = project(lat, lon);
           if (pt.visible) {
-            if (first) {
-              ctx.moveTo(pt.x, pt.y);
-              first = false;
-            } else {
-              ctx.lineTo(pt.x, pt.y);
-            }
-          } else {
-            first = true;
-          }
+            if (first) { ctx.moveTo(pt.x, pt.y); first = false; }
+            else { ctx.lineTo(pt.x, pt.y); }
+          } else { first = true; }
         }
         ctx.stroke();
       });
 
-      // Meridians (Longitudes every 30°)
       for (let lon = -180; lon < 180; lon += 30) {
         ctx.beginPath();
         let first = true;
         for (let lat = -89; lat <= 89; lat += 3) {
           const pt = project(lat, lon);
           if (pt.visible) {
-            if (first) {
-              ctx.moveTo(pt.x, pt.y);
-              first = false;
-            } else {
-              ctx.lineTo(pt.x, pt.y);
-            }
-          } else {
-            first = true;
-          }
+            if (first) { ctx.moveTo(pt.x, pt.y); first = false; }
+            else { ctx.lineTo(pt.x, pt.y); }
+          } else { first = true; }
         }
         ctx.stroke();
       }
 
-      // Highlight Equator & Prime Meridian
       ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
       ctx.lineWidth = 1.2;
-      // Equator
       ctx.beginPath();
       let eqFirst = true;
       for (let lon = -180; lon <= 180; lon += 3) {
@@ -290,21 +270,18 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       ctx.stroke();
     }
 
-    // 5. Day/Night Terminator Shadow
+    // Day/Night Terminator Shadow
     if (showTerminator) {
-      // Calculate angular distance from sub-solar point to each point on the visible disc
       const subSunLatRad = ephemeris.subSolarLatitude * deg2rad;
       const subSunLonRad = ephemeris.subSolarLongitude * deg2rad;
-
-      // Generate a fine grid over the circle to shade the night hemisphere
       const step = 4;
+
       for (let py = cy - R; py <= cy + R; py += step) {
         const dy = py - cy;
         const maxDx = Math.sqrt(Math.max(0, R * R - dy * dy));
         if (maxDx <= 0) continue;
 
         for (let px = cx - maxDx; px <= cx + maxDx; px += step) {
-          // Invert orthographic projection to find lat, lon on lunar surface
           const xNorm = (px - cx) / R;
           const yNorm = -(py - cy) / R;
           const rho = Math.sqrt(xNorm * xNorm + yNorm * yNorm);
@@ -317,17 +294,14 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
           let latPt = Math.asin(cosC * Math.sin(cLatRad) + (yNorm * sinC * Math.cos(cLatRad)) / (rho || 1));
           let lonPt = cLonRad + Math.atan2(xNorm * sinC, rho * Math.cos(cLatRad) * cosC - yNorm * Math.sin(cLatRad) * sinC);
 
-          // Solar zenith angle at this point
           const cosZenith = Math.sin(latPt) * Math.sin(subSunLatRad) +
             Math.cos(latPt) * Math.cos(subSunLatRad) * Math.cos(lonPt - subSunLonRad);
 
           if (cosZenith < 0.0) {
-            // Night hemisphere
             const darkness = Math.min(0.85, 0.55 + Math.abs(cosZenith) * 0.35);
             ctx.fillStyle = `rgba(5, 7, 11, ${darkness})`;
             ctx.fillRect(px, py, step, step);
           } else if (cosZenith < 0.06) {
-            // Terminator penumbra
             const twilight = (1.0 - cosZenith / 0.06) * 0.5;
             ctx.fillStyle = `rgba(5, 7, 11, ${twilight})`;
             ctx.fillRect(px, py, step, step);
@@ -336,16 +310,16 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       }
     }
 
-    ctx.restore(); // restore clip
+    ctx.restore();
 
-    // 6. Limb outline and aerospace glow
+    // Limb outline
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(cx, cy, R, 0, Math.PI * 2);
     ctx.stroke();
 
-    // 7. Render Sub-Earth Vector Indicator
+    // Sub-Earth Vector Indicator
     const earthProj = project(ephemeris.subEarthLatitude, ephemeris.subEarthLongitude);
     if (earthProj.visible) {
       ctx.fillStyle = '#38BDF8';
@@ -367,7 +341,7 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       }
     }
 
-    // 8. Render Sub-Solar Vector Indicator
+    // Sub-Solar Vector Indicator
     const sunProj = project(ephemeris.subSolarLatitude, ephemeris.subSolarLongitude);
     if (sunProj.visible) {
       ctx.fillStyle = '#F59E0B';
@@ -389,20 +363,18 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       }
     }
 
-    // 9. Render Landing Site Reticle
+    // Landing Site Reticle
     const siteProj = project(site.latitude, site.longitude);
     if (siteProj.visible) {
       const sx = siteProj.x;
       const sy = siteProj.y;
 
-      // Reticle rings
       ctx.strokeStyle = '#06B6D4';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(sx, sy, 8, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Crosshairs
       ctx.strokeStyle = '#22D3EE';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -416,13 +388,11 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       ctx.lineTo(sx, sy + 12);
       ctx.stroke();
 
-      // Center dot
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
       ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Mission & site label callout
       ctx.fillStyle = '#06B6D4';
       ctx.font = 'bold 11px var(--font-display, sans-serif)';
       ctx.textAlign = 'left';
@@ -430,9 +400,8 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
 
       ctx.fillStyle = '#94A3B8';
       ctx.font = '9px monospace';
-      ctx.fillText(`${site.name} (${site.latitude.toFixed(1)}°, ${site.longitude.toFixed(1)}°)`, sx + 14, sy + 8);
+      ctx.fillText(`${site.name} (${formatCoordinates(site.latitude, site.longitude)})`, sx + 14, sy + 8);
     } else {
-      // If landing site is on the opposite hemisphere, show off-limb directional pointer
       const oppX = cx + (site.longitude > centerLon ? 1 : -1) * (R + 18);
       const oppY = cy - (site.latitude / 90) * (R * 0.8);
       ctx.fillStyle = 'rgba(6, 182, 212, 0.7)';
@@ -441,74 +410,70 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       ctx.fillText(`📍 ${site.name} (Far Hemisphere)`, oppX > cx ? width - 80 : 80, oppY);
     }
 
-    // 10. Coordinate Overlay HUD
+    // Coordinate Overlay HUD
     ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
     ctx.strokeStyle = 'rgba(30, 41, 59, 0.9)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(12, height - 52, 175, 40, 6);
+    ctx.roundRect(12, height - 52, 220, 40, 6);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#38BDF8';
     ctx.font = '9px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`CENTRAL VIEW: ${centerLat.toFixed(1)}°N, ${centerLon.toFixed(1)}°E`, 18, height - 36);
+    ctx.fillText(`CENTER: ${formatCoordinates(centerLat, centerLon)}`, 18, height - 36);
     ctx.fillStyle = '#94A3B8';
     ctx.fillText(`PHASE: ${ephemeris.lunarPhaseName} (${(ephemeris.illuminationFraction * 100).toFixed(0)}%)`, 18, height - 22);
   };
 
-  // --- RENDER RADAR VIEW (Local Lunar Horizon Sky Dome) ---
+  // --- RENDER RADAR VIEW (Local Lunar Horizon Sky Dome with LOLA Topography) ---
   const renderRadarView = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     const cx = width / 2;
     const cy = height / 2;
     const maxR = Math.min(width, height) * 0.42;
+    const terrain = getTerrainProfileForSite(site);
 
-    // Space dark background
     ctx.fillStyle = '#05070B';
     ctx.fillRect(0, 0, width, height);
 
-    // Horizon Disc (R = maxR corresponds to 0° elevation / local horizon)
-    // Center corresponds to Zenith (+90° elevation)
     const elevToR = (elevDeg: number): number => {
-      // 90° -> 0; 0° -> maxR; <0° -> > maxR
       return ((90 - elevDeg) / 90) * maxR;
     };
 
     const azToAngle = (azDeg: number): number => {
-      // In local horizon: 0° N is top (-90° in standard canvas radians)
       return (azDeg - 90) * (Math.PI / 180);
     };
 
-    // 1. Below horizon outer ring
+    // 1. Below spherical horizon outer base
     ctx.fillStyle = '#090D16';
     ctx.beginPath();
     ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Concentric elevation rings (30°, 60°, Horizon 0°)
+    // 2. Concentric elevation rings
     const elevSteps = [
-      { elev: 0, label: '0° Local Horizon' },
+      { elev: 0, label: '0° Mean Spherical Horizon' },
+      { elev: 15, label: '15°' },
       { elev: 30, label: '30°' },
       { elev: 60, label: '60°' }
     ];
 
     elevSteps.forEach(s => {
       const r = elevToR(s.elev);
-      ctx.strokeStyle = s.elev === 0 ? 'rgba(6, 182, 212, 0.6)' : 'rgba(148, 163, 184, 0.2)';
-      ctx.lineWidth = s.elev === 0 ? 1.8 : 1;
+      ctx.strokeStyle = s.elev === 0 ? 'rgba(6, 182, 212, 0.4)' : 'rgba(148, 163, 184, 0.15)';
+      ctx.lineWidth = s.elev === 0 ? 1.5 : 0.8;
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Label
       ctx.fillStyle = s.elev === 0 ? '#22D3EE' : '#64748B';
       ctx.font = '9px monospace';
       ctx.textAlign = 'left';
       ctx.fillText(s.label, cx + 4, cy - r + 11);
     });
 
-    // 3. Azimuth radial spokes (N, NE, E, SE, S, SW, W, NW)
+    // 3. Azimuth radial spokes
     const cardinals = [
       { az: 0, label: 'N (0°)' },
       { az: 90, label: 'E (90°)' },
@@ -521,14 +486,13 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       const x = cx + maxR * Math.cos(angle);
       const y = cy + maxR * Math.sin(angle);
 
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(x, y);
       ctx.stroke();
 
-      // Cardinal text
       const tx = cx + (maxR + 16) * Math.cos(angle);
       const ty = cy + (maxR + 16) * Math.sin(angle);
       ctx.fillStyle = '#CBD5E1';
@@ -537,6 +501,51 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
       ctx.textBaseline = 'middle';
       ctx.fillText(c.label, tx, ty);
     });
+
+    // 4. LOLA 360° LOCAL TERRAIN HORIZON SILHOUETTE
+    if (showTerrainSilhouette) {
+      ctx.save();
+      ctx.beginPath();
+      for (let az = 0; az <= 360; az += 2) {
+        const elev = terrain.getHorizonElevation(az);
+        const r = elevToR(elev);
+        const angle = azToAngle(az);
+        const x = cx + r * Math.cos(angle);
+        const y = cy + r * Math.sin(angle);
+        if (az === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+
+      // Terrain outline
+      ctx.strokeStyle = 'rgba(244, 63, 94, 0.8)';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      // Terrain occlusion shading
+      ctx.fillStyle = 'rgba(244, 63, 94, 0.08)';
+      ctx.fill();
+
+      // Prominent landmarks annotations
+      terrain.landmarks.forEach(lm => {
+        const lmAngle = azToAngle(lm.azimuthDeg);
+        const lmR = elevToR(lm.peakElevationDeg);
+        const lmx = cx + lmR * Math.cos(lmAngle);
+        const lmy = cy + lmR * Math.sin(lmAngle);
+
+        ctx.fillStyle = '#FB7185';
+        ctx.beginPath();
+        ctx.arc(lmx, lmy, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = '9px monospace';
+        ctx.fillStyle = '#FDA4AF';
+        ctx.textAlign = lmx > cx ? 'left' : 'right';
+        ctx.fillText(`⛰️ ${lm.name} (+${lm.peakElevationDeg.toFixed(1)}°)`, lmx + (lmx > cx ? 6 : -6), lmy);
+      });
+
+      ctx.restore();
+    }
 
     // Zenith marker
     ctx.fillStyle = '#06B6D4';
@@ -548,13 +557,12 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
     ctx.textAlign = 'center';
     ctx.fillText('Zenith (+90°)', cx, cy + 12);
 
-    // 4. Plot Sun Position
+    // 5. Plot Sun Position
     const sunAngle = azToAngle(conditions.sunAzimuthDeg);
     const sunR = elevToR(conditions.sunElevationDeg);
     const sunX = cx + sunR * Math.cos(sunAngle);
     const sunY = cy + sunR * Math.sin(sunAngle);
 
-    // Vector line from zenith to Sun
     ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
     ctx.setLineDash([2, 3]);
     ctx.beginPath();
@@ -563,31 +571,32 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Sun Icon
-    ctx.fillStyle = conditions.sunElevationDeg >= 0 ? '#F59E0B' : '#78350F';
+    ctx.fillStyle = conditions.isSunOccludedByTerrain ? '#78350F' : conditions.sunElevationDeg >= 0 ? '#F59E0B' : '#451A03';
     ctx.beginPath();
     ctx.arc(sunX, sunY, 7, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = '#FCD34D';
+    ctx.strokeStyle = conditions.isSunOccludedByTerrain ? '#EF4444' : '#FCD34D';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(sunX, sunY, 11, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Sun Callout
-    ctx.fillStyle = '#FCD34D';
+    ctx.fillStyle = conditions.isSunOccludedByTerrain ? '#F87171' : '#FCD34D';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`☀️ SUN (Elev: ${conditions.sunElevationDeg.toFixed(1)}°, Az: ${conditions.sunAzimuthDeg.toFixed(0)}°)`, sunX + 14, sunY - 4);
+    ctx.fillText(
+      `☀️ SUN (${conditions.sunElevationDeg.toFixed(1)}°${conditions.isSunOccludedByTerrain ? ' [OCCLUDED BY RIM]' : ''})`,
+      sunX + 14,
+      sunY - 4
+    );
 
-    // 5. Plot Earth Position
+    // 6. Plot Earth Position
     const earthAngle = azToAngle(conditions.earthAzimuthDeg);
     const earthR = elevToR(conditions.earthElevationDeg);
     const earthX = cx + earthR * Math.cos(earthAngle);
     const earthY = cy + earthR * Math.sin(earthAngle);
 
-    // Vector line to Earth
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
     ctx.setLineDash([2, 3]);
     ctx.beginPath();
@@ -596,27 +605,29 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Earth icon
-    ctx.fillStyle = conditions.earthElevationDeg >= 0 ? '#0284C7' : '#1E293B';
+    ctx.fillStyle = conditions.isEarthOccludedByTerrain ? '#1E293B' : conditions.earthElevationDeg >= 0 ? '#0284C7' : '#0F172A';
     ctx.beginPath();
     ctx.arc(earthX, earthY, 7, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = '#38BDF8';
+    ctx.strokeStyle = conditions.isEarthOccludedByTerrain ? '#EF4444' : '#38BDF8';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(earthX, earthY, 11, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Earth Callout
-    ctx.fillStyle = '#38BDF8';
+    ctx.fillStyle = conditions.isEarthOccludedByTerrain ? '#F87171' : '#38BDF8';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`🌍 EARTH (Elev: ${conditions.earthElevationDeg.toFixed(1)}°, Az: ${conditions.earthAzimuthDeg.toFixed(0)}°)`, earthX + 14, earthY - 4);
+    ctx.fillText(
+      `🌍 EARTH (${conditions.earthElevationDeg.toFixed(1)}°${conditions.isEarthOccludedByTerrain ? ' [OCCLUDED]' : ''})`,
+      earthX + 14,
+      earthY - 4
+    );
   };
 
   return (
-    <div className="relative w-full h-[440px] md:h-[500px] bg-[#05070B] border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+    <div className="relative w-full h-[460px] md:h-[520px] bg-[#05070B] border border-slate-800 rounded-xl overflow-hidden flex flex-col">
       {/* Top Toolbar */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#090D16]/90 border-b border-slate-800/80 backdrop-blur-sm z-10 text-xs">
         {/* Left: View Mode Segmented Control */}
@@ -643,9 +654,20 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
           </button>
         </div>
 
-        {/* Right: Quick actions & Layer toggles */}
+        {/* Right: Quick actions, custom coords, and layer toggles */}
         <div className="flex items-center gap-2">
-          {viewMode === 'globe' && (
+          {onOpenCustomModal && (
+            <button
+              onClick={onOpenCustomModal}
+              className="px-2.5 py-1 text-cyan-300 hover:text-white bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/40 rounded-md transition-colors flex items-center gap-1.5 font-medium"
+              title="Set custom landing coordinates"
+            >
+              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Custom Coordinates</span>
+            </button>
+          )}
+
+          {viewMode === 'globe' ? (
             <>
               <button
                 onClick={handleCenterOnSite}
@@ -653,7 +675,7 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
                 title="Center on mission landing site"
               >
                 <Crosshair className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Center Site</span>
+                <span className="hidden sm:inline">Center Site</span>
               </button>
 
               <button
@@ -662,12 +684,11 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
                 title="Reset to Lunar Prime Meridian (0°, 0°)"
               >
                 <RotateCw className="w-3.5 h-3.5 text-slate-400" />
-                <span>Near Side</span>
+                <span className="hidden sm:inline">Near Side</span>
               </button>
 
               <div className="h-4 w-px bg-slate-800 mx-1" />
 
-              {/* Layer toggles */}
               <button
                 onClick={() => setShowGrid(!showGrid)}
                 className={`p-1.5 rounded-md border transition-colors ${
@@ -690,7 +711,6 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
 
               <div className="h-4 w-px bg-slate-800 mx-1" />
 
-              {/* Zoom controls */}
               <button
                 onClick={() => setZoom(prev => Math.min(2.0, prev + 0.15))}
                 className="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-colors"
@@ -706,6 +726,17 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
             </>
+          ) : (
+            <button
+              onClick={() => setShowTerrainSilhouette(!showTerrainSilhouette)}
+              className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-colors flex items-center gap-1.5 ${
+                showTerrainSilhouette ? 'bg-rose-950/60 border-rose-500/40 text-rose-300' : 'bg-slate-900 border-slate-800 text-slate-400'
+              }`}
+              title="Toggle LOLA terrain crater rim silhouette"
+            >
+              <Mountain className="w-3.5 h-3.5" />
+              <span>LOLA Rim Mask</span>
+            </button>
           )}
         </div>
       </div>
@@ -721,31 +752,36 @@ export const LunarGlobeCanvas: React.FC<LunarGlobeCanvasProps> = ({
           className="w-full h-full block"
         />
 
-        {/* Viewport Hint Floating Badge */}
         {viewMode === 'globe' ? (
           <div className="absolute top-3 left-3 pointer-events-none text-[11px] font-mono text-slate-400 bg-black/60 px-2.5 py-1 rounded border border-slate-800/80 backdrop-blur-sm">
-            Drag to rotate lunar hemisphere · Click "Center Site" to focus
+            Drag to rotate · Click &ldquo;Center Site&rdquo; to focus
           </div>
         ) : (
           <div className="absolute top-3 left-3 pointer-events-none text-[11px] font-mono text-slate-400 bg-black/60 px-2.5 py-1 rounded border border-slate-800/80 backdrop-blur-sm">
-            Observer reference frame at {site.name} · Center is local Zenith (+90°)
+            Observer frame at {site.name} · Red line: LOLA 360° terrain rim silhouette
           </div>
         )}
 
         {/* Legend / Key overlay in bottom-right */}
-        <div className="absolute bottom-3 right-3 text-[11px] font-mono bg-black/70 px-3 py-2 rounded-lg border border-slate-800/90 backdrop-blur-sm space-y-1 text-slate-300">
+        <div className="absolute bottom-3 right-3 text-[11px] font-mono bg-black/75 px-3 py-2 rounded-lg border border-slate-800/90 backdrop-blur-sm space-y-1 text-slate-300">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block" />
-            <span>Landing Site: {site.name}</span>
+            <span>Site: {site.name}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" />
-            <span>Sun Direction (Elev: {conditions.sunElevationDeg.toFixed(1)}°)</span>
+            <span>Sun Direction ({conditions.sunElevationDeg.toFixed(1)}°)</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block" />
-            <span>Earth Direction (Elev: {conditions.earthElevationDeg.toFixed(1)}°)</span>
+            <span>Earth Direction ({conditions.earthElevationDeg.toFixed(1)}°)</span>
           </div>
+          {viewMode === 'radar' && (
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-0.5 bg-rose-400 inline-block" />
+              <span>LOLA Rim Horizon Mask</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

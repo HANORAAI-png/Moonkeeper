@@ -1,31 +1,38 @@
 import React from 'react';
-import { Sun, HelpCircle, ArrowUpRight, Clock, Compass, Zap } from 'lucide-react';
-import { LocalEnvironmentConditions } from '../types/mission';
+import { Sun, HelpCircle, Compass, Zap, Layers, Mountain, ShieldAlert } from 'lucide-react';
+import { LocalEnvironmentConditions, SolarPanelConfiguration } from '../types/mission';
 import { CalculationTopic } from './CalculationExplainerModal';
 
 interface SunAnalysisPanelProps {
   conditions: LocalEnvironmentConditions;
   onOpenExplainer: (topic: CalculationTopic) => void;
+  onSelectPanelType: (config: SolarPanelConfiguration) => void;
 }
 
 export const SunAnalysisPanel: React.FC<SunAnalysisPanelProps> = ({
   conditions,
   onOpenExplainer,
+  onSelectPanelType
 }) => {
   const {
     sunElevationDeg,
     sunAzimuthDeg,
     sunlightCondition,
     solarFluxEstimateWm2,
+    solarFluxHorizontalWm2,
+    solarFluxVerticalSunFacingWm2,
+    selectedPanelType,
+    terrainHorizonElevDegAtSun,
+    isSunOccludedByTerrain,
+    apparentSunElevationAboveTerrainDeg,
     timeUntilSunriseHours,
     timeUntilSunsetHours
   } = conditions;
 
-  // Visual status color mapping with explicit textual semantics
   const statusStyles = {
     Available: {
       badge: 'text-amber-300 bg-amber-950/40 border-amber-500/40',
-      label: 'Direct Incident Sunlight',
+      label: isSunOccludedByTerrain ? 'Occluded by Local Terrain' : 'Direct Incident Sunlight',
       dot: 'bg-amber-400'
     },
     Limited: {
@@ -35,13 +42,13 @@ export const SunAnalysisPanel: React.FC<SunAnalysisPanelProps> = ({
     },
     Unavailable: {
       badge: 'text-slate-400 bg-slate-900 border-slate-700',
-      label: 'Sun Below Horizon (Night)',
+      label: isSunOccludedByTerrain ? 'Occluded by Terrain / Crater Rim' : 'Sun Below Horizon (Night)',
       dot: 'bg-slate-500'
     }
   }[sunlightCondition];
 
   return (
-    <div className="bg-[#090D16] border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+    <div className="bg-[#090D16] border border-slate-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
       {/* Header */}
       <div>
         <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
@@ -50,8 +57,8 @@ export const SunAnalysisPanel: React.FC<SunAnalysisPanelProps> = ({
               <Sun className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold tracking-tight text-white uppercase font-display">Sun Position & Geometry</h3>
-              <p className="text-xs text-slate-400">Local Selenographic Horizontal Frame</p>
+              <h3 className="text-sm font-semibold tracking-tight text-white uppercase font-display">Sun Position & Illumination</h3>
+              <p className="text-xs text-slate-400">Local Topocentric Frame with LOLA Topography</p>
             </div>
           </div>
           <button
@@ -80,8 +87,8 @@ export const SunAnalysisPanel: React.FC<SunAnalysisPanelProps> = ({
             </div>
             <div className="mt-2 text-[11px] text-slate-400 leading-snug">
               {sunElevationDeg > 0
-                ? 'Above local horizon plane'
-                : 'Below local horizon (astronomical night)'}
+                ? 'Above mean spherical horizon'
+                : 'Below spherical horizon (astronomical night)'}
             </div>
           </div>
 
@@ -103,8 +110,32 @@ export const SunAnalysisPanel: React.FC<SunAnalysisPanelProps> = ({
           </div>
         </div>
 
+        {/* LOLA Local Terrain Clearance Banner */}
+        <div className={`mt-3 p-3 rounded-lg border flex items-center justify-between ${
+          isSunOccludedByTerrain
+            ? 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+            : 'bg-[#05070B] border-slate-800 text-slate-300'
+        }`}>
+          <div className="flex items-center gap-2">
+            <Mountain className={`w-4 h-4 ${isSunOccludedByTerrain ? 'text-rose-400' : 'text-cyan-400'}`} />
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                LOLA Terrain Horizon at Azimuth {sunAzimuthDeg.toFixed(0)}°
+              </div>
+              <div className="text-xs font-semibold mt-0.5">
+                {isSunOccludedByTerrain
+                  ? `Occluded by Crater Rim (Horizon is +${terrainHorizonElevDegAtSun.toFixed(1)}°)`
+                  : `Clear of Terrain (+${apparentSunElevationAboveTerrainDeg.toFixed(1)}° above local rim)`}
+              </div>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono text-slate-400">
+            Rim: +{terrainHorizonElevDegAtSun.toFixed(1)}°
+          </span>
+        </div>
+
         {/* Sunlight Condition Status Banner */}
-        <div className="mt-3.5 p-3 rounded-lg border border-slate-800 bg-[#05070B] flex items-center justify-between">
+        <div className="mt-3 p-3 rounded-lg border border-slate-800 bg-[#05070B] flex items-center justify-between">
           <div>
             <div className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">Sunlight Condition</div>
             <div className="flex items-center gap-2 mt-1">
@@ -120,38 +151,78 @@ export const SunAnalysisPanel: React.FC<SunAnalysisPanelProps> = ({
           </button>
         </div>
 
-        {/* Incident Solar Flux Estimate */}
-        <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
-          <div className="p-2.5 bg-[#05070B] border border-slate-800/80 rounded-lg">
-            <div className="text-slate-400 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-400" />
-              <span>Projected Solar Flux</span>
-            </div>
-            <div className="mt-1 font-mono text-sm text-slate-200 font-semibold tabular-nums">
-              {solarFluxEstimateWm2 > 0 ? `${solarFluxEstimateWm2.toFixed(0)} W/m²` : '0 W/m²'}
-            </div>
-            <div className="text-[10px] text-slate-500 mt-0.5">On horizontal regolith plane</div>
+        {/* SOLAR PANEL CONFIGURATION SELECTOR */}
+        <div className="mt-3 p-3 bg-[#05070B] border border-slate-800/80 rounded-lg space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              Solar Array Orientation
+            </span>
+            <span className="text-xs font-mono font-bold text-amber-300">
+              {solarFluxEstimateWm2.toFixed(0)} W/m²
+            </span>
           </div>
 
-          <div className="p-2.5 bg-[#05070B] border border-slate-800/80 rounded-lg">
-            <div className="text-slate-400 flex items-center gap-1">
-              <Clock className="w-3 h-3 text-cyan-400" />
-              <span>Next Solar Transition</span>
-            </div>
-            <div className="mt-1 font-mono text-sm text-slate-200 font-semibold tabular-nums">
-              {sunElevationDeg >= 0
-                ? timeUntilSunsetHours !== null ? `Sunset in ~${timeUntilSunsetHours.toFixed(0)}h` : 'Continuous daylight'
-                : timeUntilSunriseHours !== null ? `Sunrise in ~${timeUntilSunriseHours.toFixed(0)}h` : 'Polar night'}
-            </div>
-            <div className="text-[10px] text-slate-500 mt-0.5">Estimated spherical horizon crossing</div>
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              onClick={() => onSelectPanelType('vertical-sun-facing')}
+              className={`p-1.5 text-left rounded border transition-colors ${
+                selectedPanelType === 'vertical-sun-facing'
+                  ? 'bg-amber-950/50 border-amber-500/50 text-amber-300'
+                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <div className="text-[10px] font-bold">Vertical (Sun-Facing)</div>
+              <div className="text-[9px] font-mono text-slate-400 mt-0.5">{solarFluxVerticalSunFacingWm2.toFixed(0)} W/m² (Polar Opt)</div>
+            </button>
+
+            <button
+              onClick={() => onSelectPanelType('vertical-omni')}
+              className={`p-1.5 text-left rounded border transition-colors ${
+                selectedPanelType === 'vertical-omni'
+                  ? 'bg-amber-950/50 border-amber-500/50 text-amber-300'
+                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <div className="text-[10px] font-bold">Hex / Body Panels</div>
+              <div className="text-[9px] font-mono text-slate-400 mt-0.5">Nova-C multi-face</div>
+            </button>
+
+            <button
+              onClick={() => onSelectPanelType('horizontal')}
+              className={`p-1.5 text-left rounded border transition-colors ${
+                selectedPanelType === 'horizontal'
+                  ? 'bg-amber-950/50 border-amber-500/50 text-amber-300'
+                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <div className="text-[10px] font-bold">Horizontal Flat Deck</div>
+              <div className="text-[9px] font-mono text-slate-400 mt-0.5">{solarFluxHorizontalWm2.toFixed(0)} W/m² (Mare Opt)</div>
+            </button>
           </div>
+
+          <div className="text-[10px] text-slate-500 leading-snug">
+            {Math.abs(conditions.sunElevationDeg) <= 10
+              ? 'At low polar solar grazing angles, vertical panels receive near-maximum incident flux (~1,360 W/m²), whereas horizontal panels receive minimal flux.'
+              : 'Near lunar equator at solar noon, horizontal panels receive peak flux.'}
+          </div>
+        </div>
+
+        {/* Sunrise / Sunset Countdown */}
+        <div className="mt-3 p-2.5 bg-[#05070B] border border-slate-800/80 rounded-lg text-xs flex items-center justify-between">
+          <span className="text-slate-400 font-mono text-[11px]">Next Solar Transition:</span>
+          <span className="font-mono text-slate-200 font-semibold tabular-nums">
+            {sunElevationDeg >= 0
+              ? timeUntilSunsetHours !== null ? `Local Sunset in ~${timeUntilSunsetHours.toFixed(0)} hours` : 'Continuous polar illumination window'
+              : timeUntilSunriseHours !== null ? `Local Sunrise in ~${timeUntilSunriseHours.toFixed(0)} hours` : 'Polar night'}
+          </span>
         </div>
       </div>
 
       {/* Scientific Principle Disclosure */}
-      <div className="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 leading-relaxed">
+      <div className="pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 leading-relaxed">
         <span className="text-slate-300 font-medium">Scientific Context: </span>
-        Higher Sun elevation generally means stronger illumination at the selected location. Sunlight condition describes ambient geometric exposure and does not represent actual electrical power output generated by spacecraft solar arrays.
+        Calculated with LRO LOLA topographic horizon profiling. Higher Sun elevation generally means stronger illumination at the selected location. Sunlight condition describes ambient geometric exposure and does not represent actual electrical power output generated by spacecraft solar arrays.
       </div>
     </div>
   );

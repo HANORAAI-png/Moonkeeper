@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LunarMission } from '../types/mission';
-import { Menu, X, Rocket, Orbit } from 'lucide-react';
+import { Menu, X, Rocket, Orbit, MapPin, Share2, Check } from 'lucide-react';
 
 export type NavTab = 'explore' | 'missions' | 'analysis' | 'compare' | 'timeline' | 'sources' | 'about';
 
@@ -10,6 +10,9 @@ interface NavbarProps {
   missions: LunarMission[];
   activeMission: LunarMission;
   onSelectMission: (mission: LunarMission) => void;
+  onOpenCustomModal?: () => void;
+  onShareLink?: () => void;
+  isCopied?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -18,6 +21,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   missions,
   activeMission,
   onSelectMission,
+  onOpenCustomModal,
+  onShareLink,
+  isCopied = false
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
@@ -74,8 +80,33 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
         </nav>
 
-        {/* Zone 3: Active Mission Quick Selector */}
-        <div className="flex items-center gap-3">
+        {/* Zone 3: Active Mission Quick Selector & Custom Target */}
+        <div className="flex items-center gap-2">
+          {/* Share Link Button */}
+          {onShareLink && (
+            <button
+              onClick={onShareLink}
+              className="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-900 border border-slate-800 rounded-lg transition-colors flex items-center gap-1 text-xs"
+              title="Copy shareable link with current view & date parameters"
+            >
+              {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+              <span className="hidden lg:inline">{isCopied ? 'Copied' : 'Share'}</span>
+            </button>
+          )}
+
+          {/* Custom Site Shortcut Button */}
+          {onOpenCustomModal && (
+            <button
+              onClick={onOpenCustomModal}
+              className="hidden lg:flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-cyan-300 bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30 rounded-lg transition-colors"
+              title="Set custom coordinates"
+            >
+              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Custom Site</span>
+            </button>
+          )}
+
+          {/* Quick Mission Dropdown */}
           <div className="hidden sm:flex items-center gap-2 bg-[#090D16] border border-slate-800 rounded-lg px-2.5 py-1">
             <span className="text-[10px] font-mono uppercase text-slate-500">Mission:</span>
             <select
@@ -85,7 +116,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 if (found) onSelectMission(found);
               }}
               aria-label="Active Lunar Mission Selector"
-              className="bg-transparent text-xs text-cyan-300 font-medium focus:outline-none cursor-pointer max-w-[170px] truncate"
+              className="bg-transparent text-xs text-cyan-300 font-medium focus:outline-none cursor-pointer max-w-[160px] truncate"
             >
               {missions.map(m => (
                 <option key={m.id} value={m.id} className="bg-[#090D16] text-white">
@@ -125,6 +156,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             ))}
           </div>
 
+          {onOpenCustomModal && (
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenCustomModal();
+              }}
+              className="w-full py-2 px-3 rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-xs font-semibold flex items-center justify-center gap-1.5"
+            >
+              <MapPin className="w-4 h-4 text-cyan-400" />
+              <span>Define Custom Coordinates</span>
+            </button>
+          )}
+
           <div className="pt-3 border-t border-slate-800">
             <label className="text-[10px] uppercase font-mono text-slate-500 block mb-1">
               Active Mission:
@@ -133,7 +177,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               value={activeMission.id}
               onChange={e => {
                 const found = missions.find(m => m.id === e.target.value);
-                if (found) onSelectMission(found);
+                if (found) {
+                  onSelectMission(found);
+                  setMobileMenuOpen(false); // Close mobile menu after picking
+                }
               }}
               className="w-full bg-[#05070B] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
             >

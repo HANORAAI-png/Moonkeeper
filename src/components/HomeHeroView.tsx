@@ -1,5 +1,6 @@
 import React from 'react';
 import { LunarMission } from '../types/mission';
+import { formatCoordinates } from '../utils/coordinateFormatting';
 import { ArrowRight, Compass, Sun, Globe2, Clock, Sparkles, Orbit, ChevronRight } from 'lucide-react';
 import heroLunarImage from '../assets/images/hero_lunar_globe_1790694965219.jpg';
 
@@ -69,7 +70,7 @@ export const HomeHeroView: React.FC<HomeHeroViewProps> = ({
               </div>
               <span>·</span>
               <div>
-                TARGET: <span className="text-slate-200">{featuredMission.landingSite.latitude.toFixed(1)}°S, {featuredMission.landingSite.longitude.toFixed(1)}°E</span>
+                TARGET: <span className="text-slate-200">{formatCoordinates(featuredMission.landingSite.latitude, featuredMission.landingSite.longitude)}</span>
               </div>
             </div>
           </div>
